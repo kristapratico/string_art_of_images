@@ -5,7 +5,58 @@ from PIL import ImageDraw
 from bresenham import bresenham
 import math
 from math import pi
+import random
 import numpy
+
+
+# class bresenham:
+# 	def __init__(self, start, end):
+# 		self.start = list(start)
+# 		self.end = list(end)
+# 		self.path = []
+		
+# 		self.steep = abs(self.end[1]-self.start[1]) > abs(self.end[0]-self.start[0])
+		
+# 		if self.steep:
+# 			self.start = self.swap(self.start[0],self.start[1])
+# 			self.end = self.swap(self.end[0],self.end[1])
+		
+# 		if self.start[0] > self.end[0]:
+# 			_x0 = int(self.start[0])
+# 			_x1 = int(self.end[0])
+# 			self.start[0] = _x1
+# 			self.end[0] = _x0
+			
+# 			_y0 = int(self.start[1])
+# 			_y1 = int(self.end[1])
+# 			self.start[1] = _y1
+# 			self.end[1] = _y0
+		
+# 		dx = self.end[0] - self.start[0]
+# 		dy = abs(self.end[1] - self.start[1])
+# 		error = 0
+# 		derr = dy/float(dx)
+		
+# 		ystep = 0
+# 		y = self.start[1]
+		
+# 		if self.start[1] < self.end[1]: ystep = 1
+# 		else: ystep = -1
+		
+# 		for x in range(self.start[0],self.end[0]+1):
+# 			if self.steep:
+# 				self.path.append((y,x))
+# 			else:
+# 				self.path.append((x,y))
+			
+# 			error += derr
+			
+# 			if error >= 0.5:
+# 				y += ystep
+# 				error -= 1.0
+
+# 	def swap(self,n1,n2):
+# 		return [n2,n1]
 
 def circle(radius):
     # init vars
@@ -67,7 +118,7 @@ image = Image.open('cat.jpeg', 'r')
 #width, height = image.size
 #pixel_values = list(image.getdata())
 pixel_values = get_image('cat.jpeg')
-print len(pixel_values)
+#print len(pixel_values)
 
 
 # im = Image.new('RGBA', (100, 100))
@@ -104,9 +155,13 @@ def points_on_circumference(center=(0, 0), r=150, n=700):
 
         ) for x in xrange(0, n + 1)]
 
+def make_circle(center=(0, 0), r=150, n=700):
+    point = numpy.array([[int(center[0] + math.cos(numpy.pi*2*i/n) * r), int(center[1] + math.sin(numpy.pi*2*i/n) * r)] for i in range(n)])
+    return point
 
-coords = points_on_circumference(center=(145,150),r=130)
-#print coords
+coords = make_circle(center=(145,150),r=130)
+
+
 
 # coords = circle(150)
 # #points = numpy.array([[math.cos(numpy.pi*2*i/n), math.sin(numpy.pi*2*i/n)] for i in range(n)])
@@ -123,11 +178,11 @@ if kittyWidth > SQUARE_FIT_SIZE and kittyHeight > SQUARE_FIT_SIZE:
         kittyHeight = int((SQUARE_FIT_SIZE / kittyWidth) * kittyHeight)
         kittyWidth = SQUARE_FIT_SIZE
     else:           
-        print kittyWidth, kittyHeight
+        #print kittyWidth, kittyHeight
         kittyWidth = (SQUARE_FIT_SIZE / kittyHeight) * kittyWidth
         kittyWidth = int(kittyWidth)
         kittyHeight = int(SQUARE_FIT_SIZE)
-        print kittyWidth, kittyHeight
+        #print kittyWidth, kittyHeight
 
 
 kitty = kitty.resize((kittyWidth, kittyHeight))
@@ -135,8 +190,9 @@ kitty = kitty.resize((kittyWidth, kittyHeight))
 
 draw = ImageDraw.Draw(kitty)
 
+
 # for pix in coords:
-#     draw.point(((pix)), fill=(150))
+#     draw.point(tuple(pix), fill=(150))
 
 x=145
 y=150
@@ -146,10 +202,28 @@ draw.ellipse((x-r, y-r, x+r, y+r), outline=(150))
 # draw.point((x-r, y-r, x+r, y+r), fill=(150))
 # draw.point((85, 101), fill=(150))
 # draw.point((270, 105), fill=(226))
-draw.line([(274, 138), (40, 72)], fill=150)
-bre = list(bresenham(int(274.4766582193811), int(138.3468898425535), int(40.51789151199743), int(72.64698450673521)))
-for pix in bre:
-    kitty.putpixel(((pix)), ImageColor.getcolor('black', 'RGBA'))
-kitty.putpixel(((274, 138)), ImageColor.getcolor('blue', 'RGBA'))
-print kitty.getpixel((274, 138))
+#draw.line([(274, 138), (40, 72)], fill=150)
+
+im = Image.new('RGBA', (int(kittyWidth), kittyHeight), 'white')
+catstr = ImageDraw.Draw(im)
+sumpix = list()
+
+# #for line in coords:
+for adj in coords:
+    if numpy.any(coords[0] != adj):
+        bre = list(bresenham(coords[0][0], coords[0][1], adj[0], adj[1]))
+        for x in bre:
+            pixels = list()
+            pixels.append(kitty.getpixel((x)))
+        sumpix.append(numpy.sum(pixels))
+
+themin = sumpix.index(min(sumpix))
+draw.line([tuple(coords[0]), tuple(coords[themin])], fill=(255,255,255))
+catstr.line([tuple(coords[0]), tuple(coords[themin])], fill=1)
+
+# for pix in bre:
+#     kitty.putpixel(((pix)), ImageColor.getcolor('black', 'RGBA'))
+# kitty.putpixel(((274, 138)), ImageColor.getcolor('blue', 'RGBA'))
+# print kitty.getpixel((274, 138))
 kitty.save("cat3.png")
+im.save("cat4.png")
