@@ -135,13 +135,13 @@ kitty = kitty.resize((kittyWidth, kittyHeight))
 
 draw = ImageDraw.Draw(kitty)
 
-for pix in coords:
-    draw.point(((pix)), fill=(150))
+# for pix in coords:
+#     draw.point(((pix)), fill=(150))
 
-# x=137
-# y=150
-# r=132
-# draw.ellipse((x-r, y-r, x+r, y+r), outline=(150))
+x=145
+y=150
+r=130
+draw.ellipse((x-r, y-r, x+r, y+r), outline=(150))
 
 # draw.point((x-r, y-r, x+r, y+r), fill=(150))
 # draw.point((85, 101), fill=(150))
@@ -150,4 +150,6 @@ draw.line([(274, 138), (40, 72)], fill=150)
 bre = list(bresenham(int(274.4766582193811), int(138.3468898425535), int(40.51789151199743), int(72.64698450673521)))
 for pix in bre:
     kitty.putpixel(((pix)), ImageColor.getcolor('black', 'RGBA'))
+kitty.putpixel(((274, 138)), ImageColor.getcolor('blue', 'RGBA'))
+print kitty.getpixel((274, 138))
 kitty.save("cat3.png")
