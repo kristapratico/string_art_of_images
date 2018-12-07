@@ -114,10 +114,10 @@ def get_image(image_path):
 #     numpy.set_printoptions(**opt)
 
 
-image = Image.open('cat.jpeg', 'r')
+# image = Image.open('cat.jpeg', 'r')
 #width, height = image.size
 #pixel_values = list(image.getdata())
-pixel_values = get_image('cat.jpeg')
+# pixel_values = get_image('cat.jpeg')
 #print len(pixel_values)
 
 
@@ -147,7 +147,7 @@ pixel_values = get_image('cat.jpeg')
 
 # im.save('putPixel.png')
 
-def points_on_circumference(center=(0, 0), r=150, n=700):
+def points_on_circumference(center=(0, 0), r=150, n=300):
     return [
         (
             int(center[0] + (math.cos(2 * pi / n * x) * r)),  # x
@@ -155,11 +155,11 @@ def points_on_circumference(center=(0, 0), r=150, n=700):
 
         ) for x in xrange(0, n + 1)]
 
-def make_circle(center=(0, 0), r=150, n=700):
+def make_circle(center=(0, 0), r=150, n=200):
     point = numpy.array([[int(center[0] + math.cos(numpy.pi*2*i/n) * r), int(center[1] + math.sin(numpy.pi*2*i/n) * r)] for i in range(n)])
     return point
 
-coords = make_circle(center=(145,150),r=130)
+coords = make_circle(center=(178,158),r=150)
 
 
 
@@ -167,63 +167,70 @@ coords = make_circle(center=(145,150),r=130)
 # #points = numpy.array([[math.cos(numpy.pi*2*i/n), math.sin(numpy.pi*2*i/n)] for i in range(n)])
 
 
-SQUARE_FIT_SIZE = 300.0
-kitty = Image.open("cat.jpeg")
+# SQUARE_FIT_SIZE = 300.0
+# kitty = Image.open("cat.jpeg")
+# kittyWidth, kittyHeight = kitty.size
+
+
+# if kittyWidth > SQUARE_FIT_SIZE and kittyHeight > SQUARE_FIT_SIZE:
+#     # fix this 
+#     if kittyWidth > kittyHeight:
+#         kittyHeight = int((SQUARE_FIT_SIZE / kittyWidth) * kittyHeight)
+#         kittyWidth = SQUARE_FIT_SIZE
+#     else:           
+#         #print kittyWidth, kittyHeight
+#         kittyWidth = (SQUARE_FIT_SIZE / kittyHeight) * kittyWidth
+#         kittyWidth = int(kittyWidth)
+#         kittyHeight = int(SQUARE_FIT_SIZE)
+#         #print kittyWidth, kittyHeight
+
+
+# kitty = kitty.resize((kittyWidth, kittyHeight))
+
+kitty = Image.open("kit.PNG")
 kittyWidth, kittyHeight = kitty.size
-
-
-if kittyWidth > SQUARE_FIT_SIZE and kittyHeight > SQUARE_FIT_SIZE:
-    # fix this 
-    if kittyWidth > kittyHeight:
-        kittyHeight = int((SQUARE_FIT_SIZE / kittyWidth) * kittyHeight)
-        kittyWidth = SQUARE_FIT_SIZE
-    else:           
-        #print kittyWidth, kittyHeight
-        kittyWidth = (SQUARE_FIT_SIZE / kittyHeight) * kittyWidth
-        kittyWidth = int(kittyWidth)
-        kittyHeight = int(SQUARE_FIT_SIZE)
-        #print kittyWidth, kittyHeight
-
-
-kitty = kitty.resize((kittyWidth, kittyHeight))
-
-
 draw = ImageDraw.Draw(kitty)
 
 
 # for pix in coords:
 #     draw.point(tuple(pix), fill=(150))
 
-x=145
-y=150
-r=130
-draw.ellipse((x-r, y-r, x+r, y+r), outline=(150))
+# x=178
+# y=158
+# r=150
+# draw.ellipse((x-r, y-r, x+r, y+r), outline=(150))
 
 # draw.point((x-r, y-r, x+r, y+r), fill=(150))
 # draw.point((85, 101), fill=(150))
 # draw.point((270, 105), fill=(226))
 #draw.line([(274, 138), (40, 72)], fill=150)
 
-im = Image.new('RGBA', (int(kittyWidth), kittyHeight), 'white')
+im = Image.new('RGB', (int(kittyWidth), kittyHeight), 'white')
 catstr = ImageDraw.Draw(im)
 sumpix = list()
 
-# #for line in coords:
-for adj in coords:
-    if numpy.any(coords[0] != adj):
-        bre = list(bresenham(coords[0][0], coords[0][1], adj[0], adj[1]))
-        for x in bre:
-            pixels = list()
-            pixels.append(kitty.getpixel((x)))
-        sumpix.append(numpy.sum(pixels))
+# print sum(ImageStat.Stat(kitty).mean)
+# exit(0)
+random.shuffle(coords)
+for x in range(0, 5):
+    random.shuffle(coords)
+    for line in coords:
+        sumpix = list()
+        for adj in coords:
+            if numpy.any(line != adj):
+                bre = list(bresenham(line[0], line[1], adj[0], adj[1]))
+                for x in bre:
+                    pixels = list()
+                    pixels.append(kitty.getpixel((x)))
+                sumpix.append(numpy.sum(pixels))
 
-themin = sumpix.index(min(sumpix))
-draw.line([tuple(coords[0]), tuple(coords[themin])], fill=(255,255,255))
-catstr.line([tuple(coords[0]), tuple(coords[themin])], fill=1)
+        themin = sumpix.index(min(sumpix))
+        draw.line([tuple(line), tuple(coords[themin])], fill=(255,255,255))
+        catstr.line([tuple(line), tuple(coords[themin])], fill=1)
 
 # for pix in bre:
 #     kitty.putpixel(((pix)), ImageColor.getcolor('black', 'RGBA'))
 # kitty.putpixel(((274, 138)), ImageColor.getcolor('blue', 'RGBA'))
 # print kitty.getpixel((274, 138))
-kitty.save("cat3.png")
-im.save("cat4.png")
+kitty.save("kit1.png")
+im.save("kit2.png")
