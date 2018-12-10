@@ -9,86 +9,7 @@ import random
 import numpy
 
 
-# class bresenham:
-# 	def __init__(self, start, end):
-# 		self.start = list(start)
-# 		self.end = list(end)
-# 		self.path = []
-		
-# 		self.steep = abs(self.end[1]-self.start[1]) > abs(self.end[0]-self.start[0])
-		
-# 		if self.steep:
-# 			self.start = self.swap(self.start[0],self.start[1])
-# 			self.end = self.swap(self.end[0],self.end[1])
-		
-# 		if self.start[0] > self.end[0]:
-# 			_x0 = int(self.start[0])
-# 			_x1 = int(self.end[0])
-# 			self.start[0] = _x1
-# 			self.end[0] = _x0
-			
-# 			_y0 = int(self.start[1])
-# 			_y1 = int(self.end[1])
-# 			self.start[1] = _y1
-# 			self.end[1] = _y0
-		
-# 		dx = self.end[0] - self.start[0]
-# 		dy = abs(self.end[1] - self.start[1])
-# 		error = 0
-# 		derr = dy/float(dx)
-		
-# 		ystep = 0
-# 		y = self.start[1]
-		
-# 		if self.start[1] < self.end[1]: ystep = 1
-# 		else: ystep = -1
-		
-# 		for x in range(self.start[0],self.end[0]+1):
-# 			if self.steep:
-# 				self.path.append((y,x))
-# 			else:
-# 				self.path.append((x,y))
-			
-# 			error += derr
-			
-# 			if error >= 0.5:
-# 				y += ystep
-# 				error -= 1.0
 
-# 	def swap(self,n1,n2):
-# 		return [n2,n1]
-
-def circle(radius):
-    # init vars
-    switch = 3 - (2 * radius)
-    points = list()
-    x = 0
-    y = radius
-    # first quarter/octant starts clockwise at 12 o'clock
-    while x <= y:
-        # first quarter first octant
-        points.append((x,-y))
-        # first quarter 2nd octant
-        points.append((y,-x))
-        # second quarter 3rd octant
-        points.append((y,x))
-        # second quarter 4.octant
-        points.append((x,y))
-        # third quarter 5.octant
-        points.append((-x,y))
-        # third quarter 6.octant
-        points.append((-y,x))
-        # fourth quarter 7.octant
-        points.append((-y,-x))
-        # fourth quarter 8.octant
-        points.append((-x,-y))
-        if switch < 0:
-            switch = switch + (4 * x) + 6
-        else:
-            switch = switch + (4 * (x - y)) + 10
-            y = y - 1
-        x = x + 1
-    return points
 
 def get_image(image_path):
     """Get a numpy array of an image so that one can access values[x][y]."""
@@ -104,15 +25,6 @@ def get_image(image_path):
         return None
     pixel_values = numpy.array(pixel_values).reshape((width, height, channels))
     return pixel_values
-
-# def fullprint(*args, **kwargs):
-#     from pprint import pprint
-#     import numpy
-#     opt = numpy.get_printoptions()
-#     numpy.set_printoptions(threshold='nan')
-#     pprint(*args, **kwargs)
-#     numpy.set_printoptions(**opt)
-
 
 # image = Image.open('cat.jpeg', 'r')
 #width, height = image.size
@@ -147,49 +59,8 @@ def get_image(image_path):
 
 # im.save('putPixel.png')
 
-def points_on_circumference(center=(0, 0), r=150, n=300):
-    return [
-        (
-            int(center[0] + (math.cos(2 * pi / n * x) * r)),  # x
-            int(center[1] + (math.sin(2 * pi / n * x) * r))  # y
-
-        ) for x in xrange(0, n + 1)]
-
-def make_circle(center=(0, 0), r=150, n=200):
-    point = numpy.array([[int(center[0] + math.cos(numpy.pi*2*i/n) * r), int(center[1] + math.sin(numpy.pi*2*i/n) * r)] for i in range(n)])
-    return point
-
-coords = make_circle(center=(178,158),r=150)
 
 
-
-# coords = circle(150)
-# #points = numpy.array([[math.cos(numpy.pi*2*i/n), math.sin(numpy.pi*2*i/n)] for i in range(n)])
-
-
-# SQUARE_FIT_SIZE = 300.0
-# kitty = Image.open("cat.jpeg")
-# kittyWidth, kittyHeight = kitty.size
-
-
-# if kittyWidth > SQUARE_FIT_SIZE and kittyHeight > SQUARE_FIT_SIZE:
-#     # fix this 
-#     if kittyWidth > kittyHeight:
-#         kittyHeight = int((SQUARE_FIT_SIZE / kittyWidth) * kittyHeight)
-#         kittyWidth = SQUARE_FIT_SIZE
-#     else:           
-#         #print kittyWidth, kittyHeight
-#         kittyWidth = (SQUARE_FIT_SIZE / kittyHeight) * kittyWidth
-#         kittyWidth = int(kittyWidth)
-#         kittyHeight = int(SQUARE_FIT_SIZE)
-#         #print kittyWidth, kittyHeight
-
-
-# kitty = kitty.resize((kittyWidth, kittyHeight))
-
-kitty = Image.open("kit.PNG")
-kittyWidth, kittyHeight = kitty.size
-draw = ImageDraw.Draw(kitty)
 
 
 # for pix in coords:
@@ -205,32 +76,124 @@ draw = ImageDraw.Draw(kitty)
 # draw.point((270, 105), fill=(226))
 #draw.line([(274, 138), (40, 72)], fill=150)
 
-im = Image.new('RGB', (int(kittyWidth), kittyHeight), 'white')
+
+kitty = Image.open("kitty.PNG").convert('L')
+draw = ImageDraw.Draw(kitty)
+kitty.save("kitty1.png")
+
+
+imgRadius = 500 
+
+
+# if kittyWidth > SQUARE_FIT_SIZE and kittyHeight > SQUARE_FIT_SIZE:
+#     # fix this 
+#     if kittyWidth > kittyHeight:
+#         kittyHeight = int((SQUARE_FIT_SIZE / kittyWidth) * kittyHeight)
+#         kittyWidth = SQUARE_FIT_SIZE
+#     else:           
+#         #print kittyWidth, kittyHeight
+#         kittyWidth = (SQUARE_FIT_SIZE / kittyHeight) * kittyWidth
+#         kittyWidth = int(kittyWidth)
+#         kittyHeight = int(SQUARE_FIT_SIZE)
+#         #print kittyWidth, kittyHeight
+
+height, width = kitty.size
+minEdge= min(height, width)
+topEdge = int((height - minEdge)/2)
+leftEdge = int((width - minEdge)/2)
+imgCropped = kitty.crop(())
+
+imgCropped = kitty[topEdge:topEdge+minEdge, leftEdge:leftEdge+minEdge]
+imgResized = imgCropped.resize((2*imgRadius + 1, 2*imgRadius + 1))
+imgResized.save("kittycrop.png")
+exit(1)
+
+im = Image.new('RGB', (int(width), height), 'white')
 catstr = ImageDraw.Draw(im)
-sumpix = list()
 
-# print sum(ImageStat.Stat(kitty).mean)
-# exit(0)
-random.shuffle(coords)
-for x in range(0, 5):
-    random.shuffle(coords)
-    for line in coords:
-        sumpix = list()
-        for adj in coords:
-            if numpy.any(line != adj):
-                bre = list(bresenham(line[0], line[1], adj[0], adj[1]))
-                for x in bre:
-                    pixels = list()
-                    pixels.append(kitty.getpixel((x)))
-                sumpix.append(numpy.sum(pixels))
+kitty = cv2.resize(imgCropped, (2*imgRadius + 1, 2*imgRadius + 1)) 
+cv2.imwrite('./resized.png', kitty)
 
-        themin = sumpix.index(min(sumpix))
-        draw.line([tuple(line), tuple(coords[themin])], fill=(255,255,255))
-        catstr.line([tuple(line), tuple(coords[themin])], fill=1)
+height, width = kitty.shape[:2]
+previousPins = []
+imgResult = 255 * np.ones((height, width))
+nLines = 900
+nPins = 200
+oldPin = 0
+minLoop = 3
+height, width = kitty.shape[0:2]
+x = int(width/2)
+y = int(height/2)
 
-# for pix in bre:
-#     kitty.putpixel(((pix)), ImageColor.getcolor('black', 'RGBA'))
-# kitty.putpixel(((274, 138)), ImageColor.getcolor('blue', 'RGBA'))
-# print kitty.getpixel((274, 138))
+def make_circle(center=(0, 0), r=150, n=200):
+    point = np.array([[int(center[0] + math.cos(np.pi*2*i/n) * r), int(center[1] + math.sin(np.pi*2*i/n) * r)] for i in range(n)])
+    return point
+
+def check_tooclose(coords, line, adj):
+    if abs(line- adj) < 25:
+        return True
+
+coords = make_circle(center=(x,y),r=500)
+
+
+line_list = []
+
+for line in range(nLines):
+    bestLine = 9999999999
+    oldCoord = coords[oldPin]
+
+    for index in range(1, nPins):
+        pin = (oldPin + index) % nPins
+        pixels = list()
+        coord = coords[pin]
+        if check_tooclose(coords, oldPin, pin):
+            continue
+        bre = list(bresenham(oldCoord[0], oldCoord[1], coord[0], coord[1]))
+        for x in bre:
+            y, z = x
+            pixels.append(int(kitty[y, z]))
+        lineSum = int(np.sum(pixels) / len(bre)) 
+        if lineSum < bestLine:
+            bestLine = lineSum
+            bestPin = pin
+            bestBre = bre
+        # if (lineSum < bestLine) and not(pin in previousPins):
+        #     bestLine = lineSum
+        #     bestPin = pin
+        #     bestBre = bre
+
+    # Update previous pins
+    # if len(previousPins) >= minLoop:
+    #     previousPins.pop(0)
+    # previousPins.append(bestPin)
+
+    line_list.append((oldPin, bestPin))
+    #cv2.line(kitty, tuple(oldCoord), tuple(coords[bestPin]), (255,255,255), 1)
+    #cv2.line(imgResult, tuple(oldCoord), tuple(coords[bestPin]), (15,15,15),1)
+    #pinn = coords[bestPin]
+    #bre = list(bresenham(oldCoord[0], oldCoord[1], pinn[0], pinn[1]))
+    for x in bestBre:
+        y, z = x
+        kitty[y, z] = 255
+        imgResult[y, z] = 0
+    # Save line to results
+    # lines.append((oldPin, bestPin))
+
+    # plot results
+    # xLine, yLine = linePixels(coords[bestPin], coord)
+    # imgResult[yLine, xLine] = 0
+
+    # Break if no lines possible
+    if bestPin == oldPin:
+        break
+
+
+    oldPin = bestPin
+
+cv2.imwrite('lol5.png', kitty)
+cv2.imwrite('threaded5.png', imgResult)
+
+
+
 kitty.save("kit1.png")
 im.save("kit2.png")
