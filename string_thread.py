@@ -1,8 +1,8 @@
 import math
 import numpy as np
 import cv2
+import threading
 import time
-
 
 def bresenham(x0, y0, x1, y1):
     """Yield integer coordinates on the line from (x0, y0) to (x1, y1).
@@ -49,13 +49,37 @@ def update_image(breList, kitty, imgResult):
         y, z = x
         kitty[y, z] = 255
         imgResult[y, z] = 0
-    cv2.imshow('image', imgResult)
-    cv2.waitKey(1)
-    cv2.destroyAllWindows()
+
+def wrapper(func, args, res):
+    res.append(func(*args))
+
+def calc_chunk2(oldCoord, oldPin, nPins, pin_split):
+    res = []
+    bestLine = 9999999
+    for index in range(1, pin_split):
+        pin = (oldPin + index) % nPins
+        pixels = 0
+        coord = coords[pin]
+        if check_tooclose(coords, oldPin, pin):
+            continue
+        bre = list(bresenham(oldCoord[0], oldCoord[1], coord[0], coord[1]))
+        for x in bre:
+            y, z = x
+            pixels += int(kitty[y, z])
+        lineSum = int(pixels / len(bre))
+        if lineSum < bestLine:
+            bestLine = lineSum
+            bestPin = pin
+            bestBre = bre
+
+    res = bestBre
+    res.append(bestLine)
+    res.append(bestPin)
+    return res        
 
 start_time = time.time()
 imgRadius = 500 
-image = cv2.imread('growly.jpg', cv2.IMREAD_GRAYSCALE)
+image = cv2.imread('kitty.png', cv2.IMREAD_GRAYSCALE)
 height, width = image.shape[0:2]
 minEdge= min(height, width)
 topEdge = int((height - minEdge)/2)
@@ -66,7 +90,7 @@ cv2.imwrite('./resized.png', kitty)
 
 height, width = kitty.shape[:2]
 imgResult = 255 * np.ones((height, width))
-nLines = 1000
+nLines = 800
 nPins = 200
 oldPin = 0
 height, width = kitty.shape[0:2]
@@ -86,8 +110,13 @@ line_list = []
 for line in range(nLines):
     bestLine = 9999999999
     oldCoord = coords[oldPin]
-
-    for index in range(1, nPins):
+    
+    pin_split = int(nPins/2)
+    res = []
+    t = threading.Thread(target=wrapper, args=(calc_chunk2, (oldCoord, oldPin, nPins, pin_split), res))
+    t.start()
+    
+    for index in range(pin_split, nPins):
         pin = (oldPin + index) % nPins
         pixels = 0
         coord = coords[pin]
@@ -102,11 +131,16 @@ for line in range(nLines):
             bestLine = lineSum
             bestPin = pin
             bestBre = bre
+    
+    if res[0][-1] < bestLine:
+        bestLine = res[0][-1]
+        bestPin = res[0][-2]
+        bestBre = res[0][:-2]
 
     line_list.append((oldPin, bestPin))
     update_image(bestBre, kitty, imgResult)
     oldPin = bestPin
 
-cv2.imwrite('growly2.png', kitty)
-cv2.imwrite('growlyresults2.png', imgResult)
+cv2.imwrite('trythreading.png', kitty)
+cv2.imwrite('trythreadingresult.png', imgResult)
 print time.time() - start_time, "seconds"
