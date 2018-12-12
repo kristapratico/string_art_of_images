@@ -44,20 +44,24 @@ def check_tooclose(coords, line, adj):
     if abs(line- adj) < 25:
         return True
 
-def update_image(breList, kitty, imgResult):
-    for x in breList:
-        y, z = x
-        kitty[y, z] = 255
-        imgResult[y, z] = 20
-    # cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
-    # cv2.resizeWindow('image', 1001, 1001)  
-    # cv2.imshow('image', imgResult)
-    # cv2.waitKey(1)  
+def update_image(bestBre, pinx, piny, kitty):
+    mask = np.zeros(kitty.shape[:2], dtype = "uint8")
+    cv2.line(mask, pinx, piny, 255, 1)
+    #cv2.line(imgResult, pinx, piny, 0, 1)
+    imgMasked = cv2.bitwise_or(kitty, mask)
+    kitty = np.add(imgMasked, mask)
+
+    cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
+    cv2.resizeWindow('image', 1001, 1001)  
+    cv2.imshow('image', kitty)
+    cv2.waitKey(1) 
+
+    return kitty
 
 
 start_time = time.time()
-imgRadius = 500
-image = cv2.imread('johnm.PNG', cv2.IMREAD_GRAYSCALE)
+imgRadius = 500 
+image = cv2.imread('kitty.PNG', cv2.IMREAD_GRAYSCALE)
 
 
 
@@ -85,14 +89,14 @@ cv2.imwrite('./resized.png', kitty)
 
 height, width = kitty.shape[:2]
 imgResult = 255 * np.ones((height, width))
-nLines = 1000
+nLines = 500
 nPins = 200
 oldPin = 0
 
 x = int(width/2)
 y = int(height/2)
 
-coords = make_circle(center=(x,y),r=imgRadius, n=nPins)
+coords = make_circle(center=(x,y),r=500)
 
 # if you want less local lines
 # for x in coords:
@@ -103,7 +107,7 @@ coords = make_circle(center=(x,y),r=imgRadius, n=nPins)
 line_list = []
 
 for line in range(nLines):
-    bestLine = float("inf")
+    bestLine = 9999999999
     oldCoord = coords[oldPin]
 
     for index in range(1, nPins):
@@ -112,7 +116,7 @@ for line in range(nLines):
         coord = coords[pin]
         if check_tooclose(coords, oldPin, pin):
             continue
-        bre = list(bresenham(oldCoord[0], oldCoord[1], coord[0], coord[1]))
+        bre = list(bresenham(oldCoord[0], oldCoord[1], coord[0], coord[1]))  
         pixels = sum(kitty[x[0], x[1]] for x in bre)
         lineSum = int(pixels / len(bre)) 
         if lineSum < bestLine:
@@ -120,12 +124,13 @@ for line in range(nLines):
             bestPin = pin
             bestBre = bre
 
-    line_list.append((oldPin, bestPin))
-    update_image(bestBre, kitty, imgResult)
+    line_list.append((oldPin, bestPin))    
+    kitty = update_image(bestBre, tuple(coords[oldPin]), tuple(coords[bestPin]), kitty)
+    
     oldPin = bestPin
 
-cv2.imwrite('john2.png', kitty)
-cv2.imwrite('johnresults1.png', imgResult)
+cv2.imwrite('reg500.png', kitty)
+cv2.imwrite('reg500results.png', imgResult)
 # cv2.imshow('image', imgResult)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()

@@ -90,7 +90,7 @@ cv2.imwrite('./resized.png', kitty)
 
 height, width = kitty.shape[:2]
 imgResult = 255 * np.ones((height, width))
-nLines = 800
+nLines = 1000
 nPins = 200
 oldPin = 0
 height, width = kitty.shape[0:2]
