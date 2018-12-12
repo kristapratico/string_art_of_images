@@ -4,66 +4,61 @@ import cv2
 import time
 
 
+# https://stackoverflow.com/questions/5186939/algorithm-for-drawing-a-4-connected-line
 def bresenham(x0, y0, x1, y1):
-    """Yield integer coordinates on the line from (x0, y0) to (x1, y1).
-    Input coordinates should be integers.
-    The result will contain both the start and the end point.
-    https://pypi.org/project/bresenham/
-    """
-    dx = x1 - x0
-    dy = y1 - y0
+    dx = abs(x1 - x0)    # distance to travel in X
+    dy = abs(y1 - y0)    # distance to travel in Y
 
-    xsign = 1 if dx > 0 else -1
-    ysign = 1 if dy > 0 else -1
-
-    dx = abs(dx)
-    dy = abs(dy)
-
-    if dx > dy:
-        xx, xy, yx, yy = xsign, 0, 0, ysign
+    if x0 < x1:
+        ix = 1           # x will increase at each step
     else:
-        dx, dy = dy, dx
-        xx, xy, yx, yy = 0, ysign, xsign, 0
+        ix = -1          # x will decrease at each step
 
-    D = 2*dy - dx
-    y = 0
+    if y0 < y1:
+        iy = 1           # y will increase at each step
+    else:
+        iy = -1          # y will decrease at each step
 
-    for x in range(dx + 1):
-        yield x0 + x*xx + y*yx, y0 + x*xy + y*yy
-        if D >= 0:
-            y += 1
-            D -= 2*dx
-        D += 2*dy
+    e = 0                # Current error 
 
+    for i in range(dx + dy):
+        yield (x0, y0)
+        e1 = e + dy
+        e2 = e - dx
+        if abs(e1) < abs(e2):
+            # Error will be smaller moving on X
+            x0 += ix
+            e = e1
+        else:
+            # Error will be smaller moving on Y
+            y0 += iy
+            e = e2
 
-def make_circle(center=(0, 0), r=150, n=200):
-    point = np.array([[int(center[0] + math.cos(np.pi*2*i/n) * r), int(center[1] + math.sin(np.pi*2*i/n) * r)] for i in range(n)])
-    return point
+def get_pin_pin_list(center=(0, 0), r=150, n=200):
+    points = np.array([[int(center[0] + math.cos(np.pi*2*i/n) * r), int(center[1] + math.sin(np.pi*2*i/n) * r)] for i in range(n)])
+    return points
 
-def check_tooclose(coords, line, adj):
-    if abs(line- adj) < 25:
+def pins_too_close(pin_list, pinA, pinB):
+    if abs(pinA - pinB) < 25:
         return True
 
-def update_image(bestBre, pinx, piny, kitty):
+def update_image(pinx, piny, kitty):
     mask = np.zeros(kitty.shape[:2], dtype = "uint8")
     cv2.line(mask, pinx, piny, 255, 1)
-    #cv2.line(imgResult, pinx, piny, 0, 1)
-    imgMasked = cv2.bitwise_or(kitty, mask)
-    kitty = np.add(imgMasked, mask)
-
-    cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
-    cv2.resizeWindow('image', 1001, 1001)  
-    cv2.imshow('image', kitty)
-    cv2.waitKey(1) 
+    cv2.line(imgResult, pinx, piny, 0, 1)
+    kitty = cv2.bitwise_or(kitty, mask)
+ 
+    # cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
+    # cv2.resizeWindow('image', 1001, 1001)  
+    # cv2.imshow('image', imgResult)
+    # cv2.waitKey(1) 
 
     return kitty
 
 
 start_time = time.time()
-imgRadius = 500 
-image = cv2.imread('kitty.PNG', cv2.IMREAD_GRAYSCALE)
-
-
+radius = 500 
+image = cv2.imread('kk.jpg', cv2.IMREAD_GRAYSCALE)
 
 
 height, width = image.shape[0:2]
@@ -71,66 +66,48 @@ minEdge= min(height, width)
 topEdge = int((height - minEdge)/2)
 leftEdge = int((width - minEdge)/2)
 imgCropped = image[topEdge:topEdge+minEdge, leftEdge:leftEdge+minEdge]
-kitty = cv2.resize(imgCropped, (2*imgRadius + 1, 2*imgRadius + 1)) 
+kitty = cv2.resize(imgCropped, (2*radius + 1, 2*radius + 1)) 
 cv2.imwrite('./resized.png', kitty)
-
-
-#nrows, ncols = kitty.shape
-# row, col = np.ogrid[:nrows, :ncols]
-# cnt_row, cnt_col = nrows / 2, ncols / 2
-# outer_disk_mask = ((row - cnt_row)**2 + (col - cnt_col)**2 >
-#                        (nrows / 2)**2)
-# kitty[outer_disk_mask] = 0
-# print len(kitty[outer_disk_mask])
-# print np.sum(kitty[outer_disk_mask])
-# cv2.imwrite('testing.png', kitty)
-# exit(0)
 
 
 height, width = kitty.shape[:2]
 imgResult = 255 * np.ones((height, width))
-nLines = 500
-nPins = 200
+num_lines = 1000
+num_pins = 200
 oldPin = 0
 
-x = int(width/2)
-y = int(height/2)
+center_x = int(width/2)
+center_y = int(height/2)
 
-coords = make_circle(center=(x,y),r=500)
-
-# if you want less local lines
-# for x in coords:
-#     y,z = x
-#     cv2.circle(kitty,(y,z), 55, (255,255,0), -1)
-
+pin_list = get_pin_pin_list(center=(center_x,center_y),r=radius, n=num_pins)
 
 line_list = []
 
-for line in range(nLines):
-    bestLine = 9999999999
-    oldCoord = coords[oldPin]
+for line in range(num_lines):
+    bestLine = float("inf")
+    oldCoord = pin_list[oldPin]
 
-    for index in range(1, nPins):
-        pin = (oldPin + index) % nPins
-        pixels = 0
-        coord = coords[pin]
-        if check_tooclose(coords, oldPin, pin):
+    for index in range(1, num_pins):
+        pin = (oldPin + index) % num_pins
+        coord = pin_list[pin]
+
+        if pins_too_close(pin_list, oldPin, pin):
             continue
-        bre = list(bresenham(oldCoord[0], oldCoord[1], coord[0], coord[1]))  
-        pixels = sum(kitty[x[0], x[1]] for x in bre)
-        lineSum = int(pixels / len(bre)) 
+
+        line_pin_list = list(bresenham(oldCoord[0], oldCoord[1], coord[0], coord[1]))  
+        pinX, pinY = zip(*line_pin_list)
+        pixel_sum = np.sum(kitty[pinY, pinX])
+        lineSum = int(pixel_sum / len(line_pin_list))
         if lineSum < bestLine:
             bestLine = lineSum
             bestPin = pin
-            bestBre = bre
 
-    line_list.append((oldPin, bestPin))    
-    kitty = update_image(bestBre, tuple(coords[oldPin]), tuple(coords[bestPin]), kitty)
-    
+    line_list.append((oldPin, bestPin))   
+    kitty = update_image(tuple(pin_list[oldPin]), tuple(pin_list[bestPin]), kitty)
     oldPin = bestPin
 
-cv2.imwrite('reg500.png', kitty)
-cv2.imwrite('reg500results.png', imgResult)
+cv2.imwrite('kkre.png', kitty)
+cv2.imwrite('kk_results.png', imgResult)
 # cv2.imshow('image', imgResult)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
