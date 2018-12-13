@@ -57,7 +57,7 @@ def update_image(breList, kitty, imgResult):
 
 start_time = time.time()
 imgRadius = 500
-image = cv2.imread('johnm.PNG', cv2.IMREAD_GRAYSCALE)
+image = cv2.imread('dad.jpg', cv2.IMREAD_GRAYSCALE)
 
 
 
@@ -124,8 +124,8 @@ for line in range(nLines):
     update_image(bestBre, kitty, imgResult)
     oldPin = bestPin
 
-cv2.imwrite('john2.png', kitty)
-cv2.imwrite('johnresults1.png', imgResult)
+#v2.imwrite('john2.png', kitty)
+cv2.imwrite('dadpixel2.png', imgResult)
 # cv2.imshow('image', imgResult)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()

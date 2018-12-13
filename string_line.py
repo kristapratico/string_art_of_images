@@ -1,4 +1,5 @@
 import math
+import sys
 import numpy as np
 import cv2
 import time
@@ -43,9 +44,9 @@ def pins_too_close(pinA, pinB):
     if abs(pinA - pinB) < 25:
         return True
 
-def show_image(string_art, thread_count, num_lines):
+def show_image(string_art, thread_count, num_lines, square):
     cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
-    cv2.resizeWindow('image', 1001, 1001)
+    cv2.resizeWindow('image', square, square)
     cv2.putText(string_art, str(thread_count - 1), (900, 900), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 2)
     cv2.putText(string_art, str(thread_count), (900, 900), cv2.FONT_HERSHEY_SIMPLEX, 1, 0, 2)  
     if thread_count == num_lines:
@@ -64,23 +65,28 @@ def update_image(pinX, pinY, image, string_art):
 def main():
     start_time = time.time()
 
-    orig_img = cv2.imread('kk.jpg', cv2.IMREAD_GRAYSCALE)
+    orig_img = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
 
     radius = 500 
     height, width = orig_img.shape[:2]
     smaller_dim = min(height, width)
+    x1 = int((width - smaller_dim)/2)
     y1 = int((height - smaller_dim)/2) 
-    x1 = int((width - smaller_dim)/2) 
-    y2 = y1 + smaller_dim
     x2 = x1 + smaller_dim
+    y2 = y1 + smaller_dim
     crop_img = orig_img[y1:y2, x1:x2]
-    image = cv2.resize(crop_img, (2*radius + 1, 2*radius + 1)) 
-
+    square = 2*radius + 1
+    image = cv2.resize(crop_img, (square, square)) 
+    #cv2.imwrite(sys.argv[1].split('.')[0] + '_cropped.png', image)
 
     height, width = image.shape[:2]
     string_art = 255 * np.ones((height, width))
     num_pins = 200
-    num_lines = 1000
+
+    try:
+        num_lines = int(sys.argv[2])
+    except IndexError:
+        num_lines = 1000
 
     center_x = int(width/2)
     center_y = int(height/2)
@@ -111,21 +117,24 @@ def main():
                 darkest_line = line_avg
                 
         thread_count += 1
-        print_list.append((start_pin, next_pin))   
+        print_list.append((start_pin, next_pin)) 
         image = update_image(tuple(pin_list[start_pin]), tuple(pin_list[next_pin]), image, string_art)
-        #show_image(string_art, thread_count, num_lines)
+        #show_image(string_art, thread_count, num_lines, square)
         start_pin = next_pin
 
-    cv2.imwrite('kk_results4.png', string_art)
+    cv2.imwrite(sys.argv[1].split('.')[0] + '_results.png', string_art)
     print int(time.time() - start_time), "seconds elapsed"
     # cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
-    # cv2.resizeWindow('image', height, width)
+    # cv2.resizeWindow('image', square, square)
     # cv2.imshow('image', string_art)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
     # write_file = open("instructions.txt", "w")
-    # write_file.writelines(str(print_list))
+    # for coord in print_list:
+    #     x, y = coord
+    #     write_file.writelines(str(x) + " --> " + str(y) + "\n")
+    # write_file.close()
 
 if __name__== "__main__":
   main()
