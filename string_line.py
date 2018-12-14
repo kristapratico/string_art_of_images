@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import math
 import sys
 import numpy as np
@@ -45,6 +47,8 @@ def pins_too_close(pinA, pinB):
         return True
 
 def show_image(string_art, thread_count, num_lines, square):
+    """ shows the image to the user in gui
+    """
     cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
     cv2.resizeWindow('image', square, square)
     cv2.putText(string_art, str(thread_count - 1), (900, 900), cv2.FONT_HERSHEY_SIMPLEX, 1, 255, 2)
@@ -55,12 +59,20 @@ def show_image(string_art, thread_count, num_lines, square):
     cv2.waitKey(1) 
 
 def update_image(pinX, pinY, image, string_art):
+    """ Note: mask about 30 sec faster than accessing each pixel individually and updating value
+    """
     mask = np.zeros(image.shape[:2], dtype = "uint8")
     cv2.line(mask, pinX, pinY, 255, 1)
     cv2.line(string_art, pinX, pinY, 0, 1)
     image = cv2.bitwise_or(image, mask)
 
     return image
+
+def add_frame(string_art, pin_list):
+    for pin in pin_list:
+        x, y = pin
+        cv2.circle(string_art,(x, y), 3, (0,0,0), -1)
+    return string_art
 
 def main():
     start_time = time.time()
@@ -122,6 +134,7 @@ def main():
         #show_image(string_art, thread_count, num_lines, square)
         start_pin = next_pin
 
+    string_art = add_frame(string_art, pin_list)
     cv2.imwrite(sys.argv[1].split('.')[0] + '_results.png', string_art)
     print int(time.time() - start_time), "seconds elapsed"
     # cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
