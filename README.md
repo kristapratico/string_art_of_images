@@ -29,7 +29,7 @@ Original idea by Petros Vrellis: [A new way to knit (2016)](http://artof01.com/v
 
 ### Running
 
-**Usage:** ./string_line.py **image_name** **number_lines (optional)**
+**Usage:** ./string_line.py [ image_name ] [ number_lines (optional) ]
 
 If number_lines not included in command line arguments, it will default to 1000 lines.
 
