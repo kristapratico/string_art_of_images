@@ -6,10 +6,17 @@ import numpy as np
 import cv2
 import time
 
-
-# https://stackoverflow.com/questions/5186939/algorithm-for-drawing-a-4-connected-line
-# Bresenham-like algorithm returns coords for 4-connected lines
 def bresenham(x0, y0, x1, y1):
+    """ 
+    Bresenham-like algorithm returns coords for 4-connected lines. 
+    Resource: https://stackoverflow.com/questions/5186939/algorithm-for-drawing-a-4-connected-line
+
+    Parameters:
+    x0, y0 (int): x, y coords of first point
+    x1, y1 (int): x, y coords of second point
+
+    Returns: All coordinates along a line between two given points.
+    """
     dx = abs(x1 - x0)    # distance to travel in X
     dy = abs(y1 - y0)    # distance to travel in Y
 
@@ -39,15 +46,43 @@ def bresenham(x0, y0, x1, y1):
             e = e2
 
 def get_pin_list(center=(0, 0), r=150, n=200):
+    """ 
+    Calculates coordinates for each pin on the image. 
+    
+    Parameters:
+    center (int, int): coordinates for center of the image.
+    r (int): radius of circle.
+    n (int): number of pins.
+
+    Returns: Array of coordinates for each pin.
+    """
     points = np.array([[int(center[0] + math.cos(np.pi*2*i/n) * r), int(center[1] + math.sin(np.pi*2*i/n) * r)] for i in range(n)])
     return points
 
 def pins_too_close(pinA, pinB):
+    """ 
+    Checks if chosen pins are too close on loom. 
+    
+    Parameters:
+    pinA (int): starting pin.
+    pinB (int): ending pin.
+
+    Returns: True if pins too close.
+    """
     if abs(pinA - pinB) < 25:
         return True
 
 def show_image(string_art, thread_count, num_lines, square):
-    """ shows the image to the user in gui
+    """ 
+    Shows the threaded image as it is built to the user in a GUI window.
+    
+    Parameters:
+    string_art (np array): threaded image in-progress.
+    thread_count (int): counter to show number of lines drawn on image.
+    num_lines (int): number of lines that will be used to create image.
+    square (int): width x height dimensions of image.
+
+    Returns: None
     """
     cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
     cv2.resizeWindow('image', square, square)
@@ -59,7 +94,17 @@ def show_image(string_art, thread_count, num_lines, square):
     cv2.waitKey(1) 
 
 def update_image(pinX, pinY, image, string_art):
-    """ Note: mask about 30 sec faster than accessing each pixel individually and updating value
+    """ 
+    Applies a mask to the original image and does a bitwise OR to update pixel data. 
+    Note: mask about 30 sec faster than accessing each pixel individually and updating value.
+    
+    Parameters:
+    pinX (tuple): coords of starting pin
+    pinY (tuple): coords of ending pin
+    image (np array): original image
+    string_art (np array): threaded image in-progress.
+
+    Returns: original image updated with white line drawn. Result image updated with black line drawn.
     """
     mask = np.zeros(image.shape[:2], dtype = "uint8")
     cv2.line(mask, pinX, pinY, 255, 1)
@@ -69,16 +114,26 @@ def update_image(pinX, pinY, image, string_art):
     return image
 
 def add_frame(string_art, pin_list):
+    """ 
+    Draws tiny circles to represent where the pins on the image. Just for fun.
+    
+    Parameters:
+    pin_list(np array): contains coordinates of all the pins.
+    string_art (np array): the threaded image. 
+
+    Returns: The finished threaded image with drawn on pins.
+    """
     for pin in pin_list:
         x, y = pin
         cv2.circle(string_art,(x, y), 3, (0,0,0), -1)
     return string_art
 
+
 def main():
     start_time = time.time()
-
+    
+    # convert image to greyscale, crop, and resize
     orig_img = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
-
     radius = 500 
     height, width = orig_img.shape[:2]
     smaller_dim = min(height, width)
@@ -90,11 +145,12 @@ def main():
     square = 2*radius + 1
     image = cv2.resize(crop_img, (square, square)) 
     #cv2.imwrite(sys.argv[1].split('.')[0] + '_cropped.png', image)
-
+  
     height, width = image.shape[:2]
     string_art = 255 * np.ones((height, width))
     num_pins = 200
 
+    # allow user to specify number of lines used, or default to 1000 lines
     try:
         num_lines = int(sys.argv[2])
     except IndexError:
@@ -108,6 +164,7 @@ def main():
     start_pin = 0
     thread_count = 0
     print_list = []
+    print "Creating threaded image of " + sys.argv[1] + " with " + str(num_lines) + " threads. Please wait...\n"
 
     for line in range(num_lines):
         darkest_line = float("inf")
@@ -121,9 +178,13 @@ def main():
                 continue
 
             line_coords = list(bresenham(start_coords[0], start_coords[1], end_coords[0], end_coords[1]))  
-            pinX, pinY = zip(*line_coords)
+            
+            # unzip the list to get x, y coords separately
+            pinX, pinY = zip(*line_coords) 
             pixel_sum = np.sum(image[pinY, pinX])
             line_avg = int(pixel_sum / len(line_coords))
+
+            # darker<--[0..255]-->lighter
             if line_avg < darkest_line:
                 next_pin = end_pin
                 darkest_line = line_avg
@@ -131,18 +192,22 @@ def main():
         thread_count += 1
         print_list.append((start_pin, next_pin)) 
         image = update_image(tuple(pin_list[start_pin]), tuple(pin_list[next_pin]), image, string_art)
-        #show_image(string_art, thread_count, num_lines, square)
+        # UNCOMMENT the below line to view image in-progress
+        # show_image(string_art, thread_count, num_lines, square)
         start_pin = next_pin
 
     string_art = add_frame(string_art, pin_list)
     cv2.imwrite(sys.argv[1].split('.')[0] + '_results.png', string_art)
-    print int(time.time() - start_time), "seconds elapsed"
+    print "Finished: " + sys.argv[1].split('.')[0] + "_results.png"
+    print int(time.time() - start_time), "seconds elapsed."
+    # UNCOMMENT the below lines to view image when complete in GUI.
     # cv2.namedWindow('image', cv2.WINDOW_NORMAL) 
     # cv2.resizeWindow('image', square, square)
     # cv2.imshow('image', string_art)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
+    # UNCOMMENT the below lines to print pin-to-pin instructions to text file.
     # write_file = open("instructions.txt", "w")
     # for coord in print_list:
     #     x, y = coord
