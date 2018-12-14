@@ -1,6 +1,8 @@
 # String Art of Images
 
-A simple algorithm designed to produced a string/thread representation of an image. Original idea by Petros Vrellis: [A new way to knit (2016)](http://artof01.com/vrellis/works/knit.html). 
+A simple algorithm designed to produced a string/thread representation of an image. 
+
+Original idea by Petros Vrellis: [A new way to knit (2016)](http://artof01.com/vrellis/works/knit.html). 
 
 ### Examples
 
@@ -21,13 +23,14 @@ A simple algorithm designed to produced a string/thread representation of an ima
 
 ### Prerequisites
 
-Numpy
+* Numpy
 
-OpenCV
+* OpenCV
 
 ### Running
 
-USAGE: ./string_line.py image_name number_lines
+**Usage:** ./string_line.py **image_name** **number_lines (optional)**
+
 If number_lines not included in command line arguments, it will default to 1000 lines.
 
 ```
