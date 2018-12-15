@@ -131,10 +131,9 @@ def add_frame(string_art, pin_list):
 
 def main():
     start_time = time.time()
-    
+
     # convert image to greyscale, crop, and resize
     orig_img = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
-    radius = 500 
     height, width = orig_img.shape[:2]
     smaller_dim = min(height, width)
     x1 = int((width - smaller_dim)/2)
@@ -142,6 +141,7 @@ def main():
     x2 = x1 + smaller_dim
     y2 = y1 + smaller_dim
     crop_img = orig_img[y1:y2, x1:x2]
+    radius = 500 
     square = 2*radius + 1
     image = cv2.resize(crop_img, (square, square)) 
     #cv2.imwrite(sys.argv[1].split('.')[0] + '_cropped.png', image)
