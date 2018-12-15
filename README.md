@@ -1,6 +1,6 @@
 # String Art of Images
 
-A simple algorithm designed to produced a string/thread representation of an image. 
+A simple algorithm designed to produce a string/thread representation of an image. 
 
 Original idea by Petros Vrellis: [A new way to knit (2016)](http://artof01.com/vrellis/works/knit.html). 
 
